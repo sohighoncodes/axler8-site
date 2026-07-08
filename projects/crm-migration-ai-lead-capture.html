@@ -1,0 +1,105 @@
+﻿<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AXLER8 system page for a GoHighLevel CRM migration and AI lead capture system connecting WordPress forms, CallRail, Make, and GHL workflows." />
+    <meta name="theme-color" content="#07080b" />
+    <title>CRM Migration + AI Lead Capture — AXLER8</title>
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="../theme-init.js"></script>
+  </head>
+  <body class="project-page">
+    <div class="ambient" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="AXLER8 home"><span class="brand-mark" aria-hidden="true"><i></i></span><span><strong>AXLER8</strong><small>Automation systems</small></span></a>
+      <nav class="desktop-nav" aria-label="Primary navigation"><a href="../index.html#services">Services</a><a href="../index.html#systems">Systems</a><a href="../index.html#process">Process</a><a href="../index.html#tools">Tools</a><a href="../index.html#contact">Contact</a></nav>
+      <div class="header-actions"><button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="true"><span class="theme-toggle-thumb" aria-hidden="true"></span><span class="theme-option" aria-hidden="true">Light</span><span class="theme-option" aria-hidden="true">Dark</span></button><a class="nav-cta booking-cta" href="../booking.html">Book free consultation</a><button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span></button></div>
+      <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation"><a href="../index.html#services">Services</a><a href="../index.html#systems">Systems</a><a href="../index.html#process">Process</a><a href="../index.html#tools">Tools</a><a href="../booking.html">Book free consultation</a></nav>
+    </header>
+
+    <main class="project-main" id="top">
+      <section class="project-hero shell">
+        <div class="project-hero-copy reveal">
+          <a class="project-back" href="../index.html#systems">&larr; Systems</a>
+          <p class="eyebrow"><span></span> CRM migration / GoHighLevel</p>
+          <h1>CRM migration + AI lead capture.</h1>
+          <p>A centralized sales pipeline for website forms, inbound calls, AI-extracted call details, stage movement, and team tasks.</p>
+          <div class="hero-actions"><a class="primary-button booking-cta" href="../booking.html">Book free consultation <span>→</span></a><a class="secondary-button" href="#architecture">View system map</a></div>
+        </div>
+        <aside class="project-summary-card reveal">
+          <strong>What this system handles</strong>
+          <ul>
+            <li>Centralizes web form and CallRail leads into GoHighLevel.</li>
+            <li>Creates opportunities in the correct sales pipeline stage.</li>
+            <li>Uses AI to extract budget, suburb, address, notes, and intent from calls.</li>
+            <li>Creates stage-based tasks so the team knows the next action.</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="stack-ribbon shell reveal" aria-label="Tools used">
+        <span>Connected stack</span>
+        <div><img src="../assets/logos/tools/wordpress-icon.png" alt="" />WordPress</div>
+        <div><img src="../assets/logos/tools/gohighlevel-wordmark.jpg" alt="" />GoHighLevel</div>
+        <div><img src="../assets/logos/tools/callrail-wordmark.png" alt="" />CallRail</div>
+        <div><img src="../assets/logos/tools/make-icon.png" alt="" />Make</div>
+        <div>AI extraction</div>
+      </section>
+
+      <section class="project-section shell reveal" id="architecture">
+        <div class="project-section-head"><div><span>01 / System map</span><h2>All lead sources feed one sales pipeline.</h2></div><p>Website forms and phone calls no longer live in separate places. The CRM becomes the operating view for the team.</p></div>
+        <div class="architecture-map">
+          <div class="arch-column"><span class="arch-label">Lead sources</span><div class="arch-node"><img src="../assets/logos/tools/wordpress-icon.png" alt="" /><strong>Website forms</strong><small>Multiple form submissions enter through webhooks.</small></div><div class="arch-node"><img src="../assets/logos/tools/callrail-wordmark.png" alt="" /><strong>Inbound calls</strong><small>Call transcript and caller details enter the workflow.</small></div></div>
+          <div class="arch-connector"></div>
+          <div class="arch-column"><span class="arch-label">Orchestration</span><div class="arch-node is-core"><img src="../assets/logos/tools/make-icon.png" alt="" /><strong>Find, enrich, create, route</strong><small>Make checks records, extracts useful call details, and updates GHL.</small></div></div>
+          <div class="arch-connector"></div>
+          <div class="arch-column"><span class="arch-label">CRM output</span><div class="arch-node"><img src="../assets/logos/tools/gohighlevel-wordmark.jpg" alt="" /><strong>Contact + opportunity + task</strong><small>Lead lands in the right pipeline stage with context attached.</small></div></div>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>02 / Workflow path</span><h2>Lead details are captured before they disappear.</h2></div><p>The system turns unstructured calls and form submissions into actionable CRM records.</p></div>
+        <div class="workflow-path">
+          <article class="workflow-step"><small>01</small><strong>Capture</strong><span>Web form or call enters the system.</span></article>
+          <article class="workflow-step"><small>02</small><strong>Match</strong><span>Find existing contact or create a new one.</span></article>
+          <article class="workflow-step"><small>03</small><strong>Extract</strong><span>AI pulls useful details from call transcripts.</span></article>
+          <article class="workflow-step"><small>04</small><strong>Create</strong><span>Opportunity is created in GHL.</span></article>
+          <article class="workflow-step"><small>05</small><strong>Assign</strong><span>Stage-specific tasks are created.</span></article>
+          <article class="workflow-step"><small>06</small><strong>Advance</strong><span>Booked appointments move the pipeline forward.</span></article>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>03 / Backend logic</span><h2>The CRM gets useful context, not just a name and phone number.</h2></div><p>AI extraction turns calls into structured sales fields that help the team prioritize and follow up properly.</p></div>
+        <div class="logic-map">
+          <div class="logic-trigger"><div><small>Trigger</small><strong>New web form or CallRail call</strong></div></div>
+          <div class="logic-routes">
+            <div class="logic-node"><i>AI</i><div><strong>Call summary</strong><span>Questions, concerns, next step, and internal notes.</span></div><b>→</b></div>
+            <div class="logic-node"><i>$</i><div><strong>Sales context</strong><span>Budget, colour, suburb, address, and number of windows.</span></div><b>→</b></div>
+            <div class="logic-node"><i>&#10003;</i><div><strong>Pipeline action</strong><span>Create opportunity, assign task, move stage after booking.</span></div><b>→</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>04 / Value created</span><h2>The sales process becomes visible and easier to manage.</h2></div><p>The team sees leads, tasks, appointments, notes, and next steps in one place instead of jumping between tools.</p></div>
+        <div class="impact-grid">
+          <article class="impact-card"><small>VALUE</small><strong>303 opportunities</strong><span>Centralized into one CRM pipeline.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Less missed context</strong><span>Call details are extracted and stored.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Clearer next steps</strong><span>Tasks are created based on pipeline stage.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Better sales visibility</strong><span>Lead sources and opportunities are easier to manage.</span></article>
+        </div>
+      </section>
+
+      <section class="project-cta shell reveal"><div><p>Build something like this</p><h2>Need one CRM pipeline for every lead source?</h2></div><a class="primary-button booking-cta" href="../booking.html">Book free consultation <span>→</span></a></section>
+      <a class="next-system-card shell reveal" href="applicant-onboarding-engine.html"><div><small>Next system</small><strong>Applicant onboarding engine</strong></div><span>→</span></a>
+    </main>
+
+    <footer class="site-footer shell"><span>AXLER8 © 2026</span><a href="#top">Back to top ↑</a></footer>
+    <script src="../script.js"></script>
+  </body>
+</html>

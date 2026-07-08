@@ -1,0 +1,4 @@
+GOOGLE_CLIENT_EMAIL="axler8-cal@n8nfoster.iam.gserviceaccount.com"
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nPASTE_ROTATED_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
+GOOGLE_CALENDAR_ID="38a9bd8f0f7dd19abc232e42843433e3972fc43b4607ebb89598f1e713f70594@group.calendar.google.com"
+BOOKING_TIMEZONE="Asia/Manila"

@@ -1,0 +1,106 @@
+﻿<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AXLER8 system page for a lead-to-client automation connecting Monday.com, Zapier, ActiveCampaign, SignNow, Stripe, and Google Sheets." />
+    <meta name="theme-color" content="#07080b" />
+    <title>Lead-to-Client Revenue Flow — AXLER8</title>
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="../theme-init.js"></script>
+  </head>
+  <body class="project-page">
+    <div class="ambient" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="AXLER8 home"><span class="brand-mark" aria-hidden="true"><i></i></span><span><strong>AXLER8</strong><small>Automation systems</small></span></a>
+      <nav class="desktop-nav" aria-label="Primary navigation"><a href="../index.html#services">Services</a><a href="../index.html#systems">Systems</a><a href="../index.html#process">Process</a><a href="../index.html#tools">Tools</a><a href="../index.html#contact">Contact</a></nav>
+      <div class="header-actions"><button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="true"><span class="theme-toggle-thumb" aria-hidden="true"></span><span class="theme-option" aria-hidden="true">Light</span><span class="theme-option" aria-hidden="true">Dark</span></button><a class="nav-cta booking-cta" href="../booking.html">Book free consultation</a><button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span></button></div>
+      <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation"><a href="../index.html#services">Services</a><a href="../index.html#systems">Systems</a><a href="../index.html#process">Process</a><a href="../index.html#tools">Tools</a><a href="../booking.html">Book free consultation</a></nav>
+    </header>
+
+    <main class="project-main" id="top">
+      <section class="project-hero shell">
+        <div class="project-hero-copy reveal">
+          <a class="project-back" href="../index.html#systems">&larr; Systems</a>
+          <p class="eyebrow"><span></span> Revenue operations / Monday.com</p>
+          <h1>Lead-to-client revenue flow.</h1>
+          <p>A connected sales system that moves a lead from form submission to deal, contract, payment, and onboarding.</p>
+          <div class="hero-actions"><a class="primary-button booking-cta" href="../booking.html">Book free consultation <span>→</span></a><a class="secondary-button" href="#architecture">View system map</a></div>
+        </div>
+        <aside class="project-summary-card reveal">
+          <strong>What this system handles</strong>
+          <ul>
+            <li>Creates and connects records across Monday.com and ActiveCampaign.</li>
+            <li>Generates and sends contracts when the deal is ready.</li>
+            <li>Tracks Stripe payments and updates the pipeline automatically.</li>
+            <li>Enrolls contacts into follow-up campaigns based on status.</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="stack-ribbon shell reveal" aria-label="Tools used">
+        <span>Connected stack</span>
+        <div><img src="../assets/logos/tools/monday-icon.png" alt="" />Monday.com</div>
+        <div><img src="../assets/logos/tools/zapier-icon.png" alt="" />Zapier</div>
+        <div><img src="../assets/logos/tools/activecampaign-icon.png" alt="" />ActiveCampaign</div>
+        <div><img src="../assets/logos/tools/signnow-wordmark.png" alt="" />SignNow</div>
+        <div><img src="../assets/logos/tools/stripe-wordmark.png" alt="" />Stripe</div>
+        <div><img src="../assets/logos/tools/google-sheets-icon.png" alt="" />Google Sheets</div>
+      </section>
+
+      <section class="project-section shell reveal" id="architecture">
+        <div class="project-section-head"><div><span>01 / System map</span><h2>Every revenue step updates the next system.</h2></div><p>Monday.com holds the sales workspace while automations keep contacts, contracts, payment status, and campaigns aligned.</p></div>
+        <div class="architecture-map">
+          <div class="arch-column"><span class="arch-label">Entry</span><div class="arch-node"><img src="../assets/logos/tools/monday-icon.png" alt="" /><strong>Lead form + board</strong><small>New lead record and salesperson details.</small></div></div>
+          <div class="arch-connector"></div>
+          <div class="arch-column"><span class="arch-label">Orchestration</span><div class="arch-node is-core"><img src="../assets/logos/tools/zapier-icon.png" alt="" /><strong>Routing, lookups, paths, API logic</strong><small>Deal creation, contract status, payment status, and campaign enrollment.</small></div></div>
+          <div class="arch-connector"></div>
+          <div class="arch-column"><span class="arch-label">Output</span><div class="arch-node"><strong>Contract sent → signed → paid → onboarded</strong><small>Each status moves the client forward.</small></div></div>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>02 / Workflow path</span><h2>Sales, contracts, payments, and onboarding stay in sync.</h2></div><p>The system removes repeated status checking by using trigger-based actions across the sales process.</p></div>
+        <div class="workflow-path">
+          <article class="workflow-step"><small>01</small><strong>Lead</strong><span>Monday.com form creates the new record.</span></article>
+          <article class="workflow-step"><small>02</small><strong>Contact</strong><span>ActiveCampaign contact is created or updated.</span></article>
+          <article class="workflow-step"><small>03</small><strong>Deal</strong><span>Deal stage and offer details are created.</span></article>
+          <article class="workflow-step"><small>04</small><strong>Contract</strong><span>SignNow generates and sends the document.</span></article>
+          <article class="workflow-step"><small>05</small><strong>Payment</strong><span>Stripe status is tracked by plan and method.</span></article>
+          <article class="workflow-step"><small>06</small><strong>Onboard</strong><span>Paid clients receive the next steps.</span></article>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>03 / Backend logic</span><h2>Multiple paths handle real sales operations.</h2></div><p>Different plan types, contract statuses, payment methods, and follow-up states each need separate routing logic.</p></div>
+        <div class="logic-map">
+          <div class="logic-trigger"><div><small>Trigger</small><strong>Deal, contract, or payment status changes</strong></div></div>
+          <div class="logic-routes">
+            <div class="logic-node"><i>1</i><div><strong>Contract sent</strong><span>Generate document, send invite, move deal, enroll follow-up.</span></div><b>→</b></div>
+            <div class="logic-node"><i>2</i><div><strong>Contract signed</strong><span>Update Monday.com, move deal, send payment campaign.</span></div><b>→</b></div>
+            <div class="logic-node"><i>3</i><div><strong>Payment received</strong><span>Track ACH/card, update status, send onboarding email.</span></div><b>→</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>04 / Value created</span><h2>Revenue operations become easier to manage.</h2></div><p>The team can see where every client is without manually chasing contract, payment, and onboarding status.</p></div>
+        <div class="impact-grid">
+          <article class="impact-card"><small>VALUE</small><strong>Cleaner sales handoff</strong><span>Lead, contact, and deal records stay connected.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Faster follow-up</strong><span>Campaigns run based on actual status.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Payment visibility</strong><span>Stripe status updates the operating board.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Fewer missed steps</strong><span>Contracts and onboarding are triggered by workflow state.</span></article>
+        </div>
+      </section>
+
+      <section class="project-cta shell reveal"><div><p>Build something like this</p><h2>Need a cleaner path from lead to signed, paid client?</h2></div><a class="primary-button booking-cta" href="../booking.html">Book free consultation <span>→</span></a></section>
+      <a class="next-system-card shell reveal" href="crm-migration-ai-lead-capture.html"><div><small>Next system</small><strong>CRM migration + AI lead capture</strong></div><span>→</span></a>
+    </main>
+
+    <footer class="site-footer shell"><span>AXLER8 © 2026</span><a href="#top">Back to top ↑</a></footer>
+    <script src="../script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,105 @@
+﻿<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AXLER8 system page for a HubSpot applicant onboarding automation connecting Jotform, HubSpot, Zapier, Twilio, Airtable, and document workflows." />
+    <meta name="theme-color" content="#07080b" />
+    <title>Applicant Onboarding Engine — AXLER8</title>
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="../theme-init.js"></script>
+  </head>
+  <body class="project-page">
+    <div class="ambient" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="AXLER8 home"><span class="brand-mark" aria-hidden="true"><i></i></span><span><strong>AXLER8</strong><small>Automation systems</small></span></a>
+      <nav class="desktop-nav" aria-label="Primary navigation"><a href="../index.html#services">Services</a><a href="../index.html#systems">Systems</a><a href="../index.html#process">Process</a><a href="../index.html#tools">Tools</a><a href="../index.html#contact">Contact</a></nav>
+      <div class="header-actions"><button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="true"><span class="theme-toggle-thumb" aria-hidden="true"></span><span class="theme-option" aria-hidden="true">Light</span><span class="theme-option" aria-hidden="true">Dark</span></button><a class="nav-cta booking-cta" href="../booking.html">Book free consultation</a><button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span></button></div>
+      <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation"><a href="../index.html#services">Services</a><a href="../index.html#systems">Systems</a><a href="../index.html#process">Process</a><a href="../index.html#tools">Tools</a><a href="../booking.html">Book free consultation</a></nav>
+    </header>
+
+    <main class="project-main" id="top">
+      <section class="project-hero shell">
+        <div class="project-hero-copy reveal">
+          <a class="project-back" href="../index.html#systems">&larr; Systems</a>
+          <p class="eyebrow"><span></span> Applicant operations / HubSpot</p>
+          <h1>Applicant onboarding engine.</h1>
+          <p>One connected journey from application to qualification, agreements, reminders, training progress, and onboarding tasks.</p>
+          <div class="hero-actions"><a class="primary-button booking-cta" href="../booking.html">Book free consultation <span>→</span></a><a class="secondary-button" href="#architecture">View system map</a></div>
+        </div>
+        <aside class="project-summary-card reveal">
+          <strong>What this system handles</strong>
+          <ul>
+            <li>Routes applicants based on eligibility and status.</li>
+            <li>Triggers reminders instead of relying on manual chasing.</li>
+            <li>Keeps onboarding progress visible across the process.</li>
+            <li>Creates the right next step when applicants move forward.</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="stack-ribbon shell reveal" aria-label="Tools used">
+        <span>Connected stack</span>
+        <div><img src="../assets/logos/tools/jotform-wordmark.png" alt="" />Jotform</div>
+        <div><img src="../assets/logos/tools/hubspot-icon.png" alt="" />HubSpot</div>
+        <div><img src="../assets/logos/tools/zapier-icon.png" alt="" />Zapier</div>
+        <div><img src="../assets/logos/tools/twilio-icon.png" alt="" />Twilio</div>
+        <div><img src="../assets/logos/tools/airtable-icon.png" alt="" />Airtable</div>
+      </section>
+
+      <section class="project-section shell reveal" id="architecture">
+        <div class="project-section-head"><div><span>01 / System map</span><h2>HubSpot becomes the control center.</h2></div><p>Each tool has a specific role. HubSpot keeps the applicant record, stage, and next action aligned.</p></div>
+        <div class="architecture-map">
+          <div class="arch-column"><span class="arch-label">Entry</span><div class="arch-node"><img src="../assets/logos/tools/jotform-wordmark.png" alt="" /><strong>Application submitted</strong><small>Applicant data enters once.</small></div></div>
+          <div class="arch-connector"></div>
+          <div class="arch-column"><span class="arch-label">Orchestration</span><div class="arch-node is-core"><img src="../assets/logos/tools/hubspot-icon.png" alt="" /><strong>Applicant record + workflow state</strong><small>Eligibility, reminders, stage movement, and next action.</small></div></div>
+          <div class="arch-connector"></div>
+          <div class="arch-column"><span class="arch-label">Output</span><div class="arch-node"><strong>Documents, reminders, training, tasks</strong><small>Every applicant lands on the correct path.</small></div></div>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>02 / Workflow path</span><h2>The process advances only when the right step is complete.</h2></div><p>Instead of one long manual checklist, the system reacts to applicant status and sends the right action forward.</p></div>
+        <div class="workflow-path">
+          <article class="workflow-step"><small>01</small><strong>Apply</strong><span>Jotform captures the application.</span></article>
+          <article class="workflow-step"><small>02</small><strong>Qualify</strong><span>Rules check eligibility.</span></article>
+          <article class="workflow-step"><small>03</small><strong>Route</strong><span>Applicant moves to the correct path.</span></article>
+          <article class="workflow-step"><small>04</small><strong>Remind</strong><span>Messages trigger when action is needed.</span></article>
+          <article class="workflow-step"><small>05</small><strong>Track</strong><span>Training progress stays visible.</span></article>
+          <article class="workflow-step"><small>06</small><strong>Onboard</strong><span>Accounts and tasks are created.</span></article>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>03 / Backend logic</span><h2>The system handles exceptions, not just the happy path.</h2></div><p>Applicant records branch into clear next actions so the team knows what happened and what needs attention.</p></div>
+        <div class="logic-map">
+          <div class="logic-trigger"><div><small>Trigger</small><strong>Application or status changes</strong></div></div>
+          <div class="logic-routes">
+            <div class="logic-node"><i>&#10003;</i><div><strong>Eligible</strong><span>Continue onboarding and advance the applicant.</span></div><b>→</b></div>
+            <div class="logic-node"><i>!</i><div><strong>Incomplete</strong><span>Send reminders and keep the record open.</span></div><b>→</b></div>
+            <div class="logic-node"><i>&times;</i><div><strong>Not eligible</strong><span>Close, redirect, or stop the onboarding path.</span></div><b>→</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="project-section shell reveal">
+        <div class="project-section-head"><div><span>04 / Value created</span><h2>The team supports applicants instead of managing the process around them.</h2></div><p>The operational value is calm visibility: fewer manual checks, clearer status, and better follow-up timing.</p></div>
+        <div class="impact-grid">
+          <article class="impact-card"><small>VALUE</small><strong>Less chasing</strong><span>Reminders trigger automatically.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Clear status</strong><span>Each applicant has a known next step.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Structured onboarding</strong><span>The path is repeatable and visible.</span></article>
+          <article class="impact-card"><small>VALUE</small><strong>Fewer missed steps</strong><span>The backend logic catches exceptions.</span></article>
+        </div>
+      </section>
+
+      <section class="project-cta shell reveal"><div><p>Build something like this</p><h2>Need an onboarding system your team does not have to babysit?</h2></div><a class="primary-button booking-cta" href="../booking.html">Book free consultation <span>→</span></a></section>
+      <a class="next-system-card shell reveal" href="lead-to-client-revenue-flow.html"><div><small>Next system</small><strong>Lead-to-client revenue flow</strong></div><span>→</span></a>
+    </main>
+
+    <footer class="site-footer shell"><span>AXLER8 © 2026</span><a href="#top">Back to top ↑</a></footer>
+    <script src="../script.js"></script>
+  </body>
+</html>
