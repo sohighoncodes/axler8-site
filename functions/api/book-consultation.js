@@ -22,7 +22,20 @@ function json(data, status = 200) {
 }
 
 function cleanPrivateKey(value) {
-  return String(value || "")
+  const raw = String(value || "").trim();
+
+  if (raw.startsWith("{")) {
+    try {
+      const serviceAccount = JSON.parse(raw);
+      if (serviceAccount.private_key) {
+        return String(serviceAccount.private_key).trim().replace(/\\n/g, "\n");
+      }
+    } catch (_) {
+      // Fall through to normal private-key cleanup below.
+    }
+  }
+
+  return raw
     .trim()
     .replace(/^['"]|['"]$/g, "")
     .replace(/\\n/g, "\n");
