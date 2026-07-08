@@ -238,20 +238,26 @@ if (bookingForm) {
     submitButton.innerHTML = "Reserving...";
 
     try {
+      if (window.location.protocol === "file:") {
+        throw new Error("local-file-preview");
+      }
+
       const response = await fetch("/api/book-consultation", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
       });
+      const result = await response.json().catch(() => ({}));
 
       if (response.status === 409) {
         status.className = "form-status is-error";
-        status.textContent = "That slot is no longer available. Please choose another time.";
+        status.textContent = result.message || "That slot is no longer available. Please choose another time.";
         return;
       }
 
       if (!response.ok) {
-        throw new Error("Calendar backend is not ready");
+        const detail = result.detail ? ` (${result.detail})` : "";
+        throw new Error(`${result.message || "Calendar booking could not be completed."}${detail}`);
       }
 
       bookingForm.reset();
@@ -260,9 +266,13 @@ if (bookingForm) {
       renderDays();
       status.className = "form-status is-success";
       status.textContent = "Booked. A calendar invitation will be sent shortly.";
-    } catch (_) {
-      status.textContent = "Calendar sync is being prepared. Sending the request by email instead...";
-      HTMLFormElement.prototype.submit.call(bookingForm);
+    } catch (error) {
+      status.className = "form-status is-error";
+      if (error.message === "local-file-preview") {
+        status.textContent = "Calendar booking only works on the live Cloudflare site, not the local file preview. Test this on axler8-site.pages.dev.";
+      } else {
+        status.textContent = error.message || "Calendar booking could not be completed. Please try again.";
+      }
     } finally {
       submitButton.disabled = false;
       submitButton.innerHTML = defaultButtonText || "Confirm booking";

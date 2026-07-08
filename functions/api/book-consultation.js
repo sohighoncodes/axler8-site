@@ -1,13 +1,31 @@
-﻿const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.freebusy";
+
+class BookingError extends Error {
+  constructor(message, status = 500, step = "server", detail = "") {
+    super(message);
+    this.name = "BookingError";
+    this.status = status;
+    this.step = step;
+    this.detail = detail;
+  }
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-store",
     },
   });
+}
+
+function cleanPrivateKey(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/\\n/g, "\n");
 }
 
 function base64Url(input) {
@@ -20,13 +38,43 @@ function base64Url(input) {
 }
 
 function pemToArrayBuffer(pem) {
-  const normalized = pem.replace(/\\n/g, "\n").replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace(/\s/g, "");
-  const binary = atob(normalized);
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
+  const normalized = cleanPrivateKey(pem)
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\s/g, "");
+
+  if (!normalized) {
+    throw new BookingError("Google private key is empty or formatted incorrectly.", 501, "config");
   }
-  return bytes.buffer;
+
+  try {
+    const binary = atob(normalized);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes.buffer;
+  } catch (_) {
+    throw new BookingError("Google private key could not be read. Check the private key formatting in Cloudflare.", 501, "config");
+  }
+}
+
+async function googleJson(response, step, message) {
+  const text = await response.text();
+  let body = {};
+
+  try {
+    body = text ? JSON.parse(text) : {};
+  } catch (_) {
+    body = { raw: text };
+  }
+
+  if (!response.ok) {
+    const googleMessage = body?.error?.message || body?.error_description || body?.raw || "";
+    throw new BookingError(message, response.status, step, String(googleMessage).slice(0, 280));
+  }
+
+  return body;
 }
 
 async function signJwt(env) {
@@ -40,13 +88,21 @@ async function signJwt(env) {
     iat: now,
   };
   const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(claim))}`;
-  const key = await crypto.subtle.importKey(
-    "pkcs8",
-    pemToArrayBuffer(env.GOOGLE_PRIVATE_KEY),
-    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
+
+  let key;
+  try {
+    key = await crypto.subtle.importKey(
+      "pkcs8",
+      pemToArrayBuffer(env.GOOGLE_PRIVATE_KEY),
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+  } catch (error) {
+    if (error instanceof BookingError) throw error;
+    throw new BookingError("Google private key could not be imported.", 501, "config");
+  }
+
   const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(unsigned));
   return `${unsigned}.${base64Url(signature)}`;
 }
@@ -57,17 +113,19 @@ async function getGoogleAccessToken(env) {
     grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
     assertion,
   });
+
   const response = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
 
-  if (!response.ok) {
-    throw new Error("Unable to authenticate with Google Calendar");
+  const token = await googleJson(response, "auth", "Unable to authenticate with Google Calendar.");
+
+  if (!token.access_token) {
+    throw new BookingError("Google authentication did not return an access token.", 502, "auth");
   }
 
-  const token = await response.json();
   return token.access_token;
 }
 
@@ -79,31 +137,33 @@ function buildDescription(payload) {
     `Email: ${payload.Email || ""}`,
     `Company: ${payload.Company || ""}`,
     `Consultation type: ${payload["Consultation type"] || ""}`,
+    `Selected day: ${payload["Selected day"] || ""}`,
+    `Selected time: ${payload["Selected time"] || ""}`,
     "",
     "Inquiry:",
     payload.Inquiry || "",
   ].join("\n");
 }
 
-export async function onRequestPost({ request, env }) {
+async function handleBooking({ request, env }) {
   if (!env.GOOGLE_CLIENT_EMAIL || !env.GOOGLE_PRIVATE_KEY || !env.GOOGLE_CALENDAR_ID) {
-    return json({ ok: false, message: "Google Calendar environment variables are not configured yet." }, 501);
+    throw new BookingError("Google Calendar environment variables are not configured yet.", 501, "config");
   }
 
   let payload;
   try {
     payload = await request.json();
   } catch (_) {
-    return json({ ok: false, message: "Invalid booking request." }, 400);
+    throw new BookingError("Invalid booking request.", 400, "request");
   }
 
   if (!payload.Name || !payload.Email || !payload["Selected start ISO"]) {
-    return json({ ok: false, message: "Missing required booking details." }, 400);
+    throw new BookingError("Missing required booking details.", 400, "request");
   }
 
   const start = new Date(payload["Selected start ISO"]);
   if (Number.isNaN(start.getTime())) {
-    return json({ ok: false, message: "Invalid selected time." }, 400);
+    throw new BookingError("Invalid selected time.", 400, "request");
   }
 
   const end = new Date(start.getTime() + 30 * 60 * 1000);
@@ -124,14 +184,11 @@ export async function onRequestPost({ request, env }) {
     }),
   });
 
-  if (!freeBusyResponse.ok) {
-    throw new Error("Unable to check Google Calendar availability");
-  }
-
-  const freeBusy = await freeBusyResponse.json();
+  const freeBusy = await googleJson(freeBusyResponse, "availability", "Unable to check Google Calendar availability.");
   const busy = freeBusy.calendars?.[env.GOOGLE_CALENDAR_ID]?.busy || [];
+
   if (busy.length > 0) {
-    return json({ ok: false, message: "Selected slot is no longer available." }, 409);
+    throw new BookingError("Selected slot is no longer available.", 409, "availability");
   }
 
   const eventResponse = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?sendUpdates=all`, {
@@ -146,14 +203,36 @@ export async function onRequestPost({ request, env }) {
       start: { dateTime: start.toISOString(), timeZone },
       end: { dateTime: end.toISOString(), timeZone },
       attendees: [{ email: payload.Email, displayName: payload.Name }],
+      guestsCanInviteOthers: false,
+      guestsCanModify: false,
+      guestsCanSeeOtherGuests: false,
       reminders: { useDefault: true },
     }),
   });
 
-  if (!eventResponse.ok) {
-    throw new Error("Unable to create Google Calendar event");
-  }
-
-  const event = await eventResponse.json();
+  const event = await googleJson(eventResponse, "create-event", "Unable to create Google Calendar event.");
   return json({ ok: true, eventId: event.id, htmlLink: event.htmlLink });
+}
+
+export async function onRequestPost(context) {
+  try {
+    return await handleBooking(context);
+  } catch (error) {
+    console.error("Booking failed", {
+      message: error.message,
+      step: error.step || "server",
+      status: error.status || 500,
+      detail: error.detail || "",
+    });
+
+    return json(
+      {
+        ok: false,
+        message: error.message || "Unable to complete booking.",
+        step: error.step || "server",
+        detail: error.detail || "",
+      },
+      error.status || 500,
+    );
+  }
 }
