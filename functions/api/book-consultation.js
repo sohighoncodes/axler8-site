@@ -158,6 +158,39 @@ function buildDescription(payload) {
   ].join("\n");
 }
 
+function buildEventBody(payload, start, end, timeZone, includeAttendee = true) {
+  const eventBody = {
+    summary: `AXLER8 Free Consultation — ${payload.Name}`,
+    description: buildDescription(payload),
+    start: { dateTime: start.toISOString(), timeZone },
+    end: { dateTime: end.toISOString(), timeZone },
+    reminders: { useDefault: true },
+  };
+
+  if (includeAttendee) {
+    eventBody.attendees = [{ email: payload.Email, displayName: payload.Name }];
+    eventBody.guestsCanInviteOthers = false;
+    eventBody.guestsCanModify = false;
+    eventBody.guestsCanSeeOtherGuests = false;
+  }
+
+  return eventBody;
+}
+
+async function createCalendarEvent({ accessToken, calendarId, payload, start, end, timeZone, includeAttendee }) {
+  const sendUpdates = includeAttendee ? "all" : "none";
+  const eventResponse = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?sendUpdates=${sendUpdates}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(buildEventBody(payload, start, end, timeZone, includeAttendee)),
+  });
+
+  return googleJson(eventResponse, "create-event", "Unable to create Google Calendar event.");
+}
+
 async function handleBooking({ request, env }) {
   if (!env.GOOGLE_CLIENT_EMAIL || !env.GOOGLE_PRIVATE_KEY || !env.GOOGLE_CALENDAR_ID) {
     throw new BookingError("Google Calendar environment variables are not configured yet.", 501, "config");
@@ -204,27 +237,28 @@ async function handleBooking({ request, env }) {
     throw new BookingError("Selected slot is no longer available.", 409, "availability");
   }
 
-  const eventResponse = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?sendUpdates=all`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      summary: `AXLER8 Free Consultation — ${payload.Name}`,
-      description: buildDescription(payload),
-      start: { dateTime: start.toISOString(), timeZone },
-      end: { dateTime: end.toISOString(), timeZone },
-      attendees: [{ email: payload.Email, displayName: payload.Name }],
-      guestsCanInviteOthers: false,
-      guestsCanModify: false,
-      guestsCanSeeOtherGuests: false,
-      reminders: { useDefault: true },
-    }),
-  });
+  try {
+    const event = await createCalendarEvent({ accessToken, calendarId, payload, start, end, timeZone, includeAttendee: true });
+    return json({ ok: true, eventId: event.id, htmlLink: event.htmlLink, inviteSent: true });
+  } catch (error) {
+    const isServiceAccountInviteBlock =
+      error instanceof BookingError &&
+      error.step === "create-event" &&
+      /service accounts cannot invite attendees/i.test(error.detail || "");
 
-  const event = await googleJson(eventResponse, "create-event", "Unable to create Google Calendar event.");
-  return json({ ok: true, eventId: event.id, htmlLink: event.htmlLink });
+    if (!isServiceAccountInviteBlock) {
+      throw error;
+    }
+
+    const event = await createCalendarEvent({ accessToken, calendarId, payload, start, end, timeZone, includeAttendee: false });
+    return json({
+      ok: true,
+      eventId: event.id,
+      htmlLink: event.htmlLink,
+      inviteSent: false,
+      message: "Booked on the AXLER8 calendar. Google blocked the automatic guest invite because this is using a service account.",
+    });
+  }
 }
 
 export async function onRequestPost(context) {

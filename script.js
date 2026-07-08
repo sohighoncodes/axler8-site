@@ -264,8 +264,13 @@ if (bookingForm) {
       updateService("CRM automation");
       selectedSlot = undefined;
       renderDays();
-      status.className = "form-status is-success";
-      status.textContent = "Booked. A calendar invitation will be sent shortly.";
+      if (result.inviteSent === false) {
+        status.className = "form-status is-success";
+        status.textContent = result.message || "Booked on the AXLER8 calendar. Guest invite needs to be sent separately.";
+      } else {
+        status.className = "form-status is-success";
+        status.textContent = "Booked. A calendar invitation will be sent shortly.";
+      }
     } catch (error) {
       status.className = "form-status is-error";
       if (error.message === "local-file-preview") {
