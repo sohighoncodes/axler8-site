@@ -41,6 +41,14 @@ function cleanPrivateKey(value) {
     .replace(/\\n/g, "\n");
 }
 
+function hasOAuthConfig(env) {
+  return Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET && env.GOOGLE_OAUTH_REFRESH_TOKEN);
+}
+
+function hasServiceAccountConfig(env) {
+  return Boolean(env.GOOGLE_CLIENT_EMAIL && env.GOOGLE_PRIVATE_KEY);
+}
+
 function base64Url(input) {
   const bytes = input instanceof ArrayBuffer ? new Uint8Array(input) : new TextEncoder().encode(input);
   let binary = "";
@@ -120,7 +128,7 @@ async function signJwt(env) {
   return `${unsigned}.${base64Url(signature)}`;
 }
 
-async function getGoogleAccessToken(env) {
+async function getServiceAccountAccessToken(env) {
   const assertion = await signJwt(env);
   const body = new URLSearchParams({
     grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
@@ -142,6 +150,47 @@ async function getGoogleAccessToken(env) {
   return token.access_token;
 }
 
+async function getOAuthAccessToken(env) {
+  const body = new URLSearchParams({
+    client_id: env.GOOGLE_OAUTH_CLIENT_ID,
+    client_secret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+    refresh_token: env.GOOGLE_OAUTH_REFRESH_TOKEN,
+    grant_type: "refresh_token",
+  });
+
+  const response = await fetch(GOOGLE_TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+
+  const token = await googleJson(response, "oauth-auth", "Unable to authenticate with your Google account.");
+
+  if (!token.access_token) {
+    throw new BookingError("Google OAuth did not return an access token.", 502, "oauth-auth");
+  }
+
+  return token.access_token;
+}
+
+async function getGoogleAccess(contextEnv) {
+  if (hasOAuthConfig(contextEnv)) {
+    return {
+      accessToken: await getOAuthAccessToken(contextEnv),
+      authMode: "oauth",
+    };
+  }
+
+  if (hasServiceAccountConfig(contextEnv)) {
+    return {
+      accessToken: await getServiceAccountAccessToken(contextEnv),
+      authMode: "service-account",
+    };
+  }
+
+  throw new BookingError("Google Calendar authentication is not configured yet.", 501, "config");
+}
+
 function buildDescription(payload) {
   return [
     "New AXLER8 consultation booking.",
@@ -160,7 +209,7 @@ function buildDescription(payload) {
 
 function buildEventBody(payload, start, end, timeZone, includeAttendee = true) {
   const eventBody = {
-    summary: `AXLER8 Free Consultation — ${payload.Name}`,
+    summary: `AXLER8 Free Consultation - ${payload.Name}`,
     description: buildDescription(payload),
     start: { dateTime: start.toISOString(), timeZone },
     end: { dateTime: end.toISOString(), timeZone },
@@ -192,8 +241,8 @@ async function createCalendarEvent({ accessToken, calendarId, payload, start, en
 }
 
 async function handleBooking({ request, env }) {
-  if (!env.GOOGLE_CLIENT_EMAIL || !env.GOOGLE_PRIVATE_KEY || !env.GOOGLE_CALENDAR_ID) {
-    throw new BookingError("Google Calendar environment variables are not configured yet.", 501, "config");
+  if (!env.GOOGLE_CALENDAR_ID) {
+    throw new BookingError("Google Calendar ID is not configured yet.", 501, "config");
   }
 
   let payload;
@@ -213,7 +262,7 @@ async function handleBooking({ request, env }) {
   }
 
   const end = new Date(start.getTime() + 30 * 60 * 1000);
-  const accessToken = await getGoogleAccessToken(env);
+  const { accessToken, authMode } = await getGoogleAccess(env);
   const calendarId = encodeURIComponent(env.GOOGLE_CALENDAR_ID);
   const timeZone = env.BOOKING_TIMEZONE || "Asia/Manila";
 
@@ -237,9 +286,14 @@ async function handleBooking({ request, env }) {
     throw new BookingError("Selected slot is no longer available.", 409, "availability");
   }
 
+  if (authMode === "oauth") {
+    const event = await createCalendarEvent({ accessToken, calendarId, payload, start, end, timeZone, includeAttendee: true });
+    return json({ ok: true, eventId: event.id, htmlLink: event.htmlLink, inviteSent: true, authMode });
+  }
+
   try {
     const event = await createCalendarEvent({ accessToken, calendarId, payload, start, end, timeZone, includeAttendee: true });
-    return json({ ok: true, eventId: event.id, htmlLink: event.htmlLink, inviteSent: true });
+    return json({ ok: true, eventId: event.id, htmlLink: event.htmlLink, inviteSent: true, authMode });
   } catch (error) {
     const isServiceAccountInviteBlock =
       error instanceof BookingError &&
@@ -256,7 +310,8 @@ async function handleBooking({ request, env }) {
       eventId: event.id,
       htmlLink: event.htmlLink,
       inviteSent: false,
-      message: "Booked on the AXLER8 calendar. Google blocked the automatic guest invite because this is using a service account.",
+      authMode,
+      message: "Booked. We received your request and will confirm the calendar invite shortly.",
     });
   }
 }

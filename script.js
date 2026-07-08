@@ -260,16 +260,16 @@ if (bookingForm) {
         throw new Error(`${result.message || "Calendar booking could not be completed."}${detail}`);
       }
 
-      bookingForm.reset();
-      updateService("CRM automation");
-      selectedSlot = undefined;
-      renderDays();
+      bookingForm.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach((field) => {
+        field.value = "";
+      });
+
       if (result.inviteSent === false) {
         status.className = "form-status is-success";
-        status.textContent = result.message || "Booked on the AXLER8 calendar. Guest invite needs to be sent separately.";
+        status.textContent = "Booked. We received your request and will confirm the calendar invite shortly.";
       } else {
         status.className = "form-status is-success";
-        status.textContent = "Booked. A calendar invitation will be sent shortly.";
+        status.textContent = "Booked. A Google Calendar invite has been sent to your email.";
       }
     } catch (error) {
       status.className = "form-status is-error";

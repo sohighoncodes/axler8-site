@@ -20,23 +20,28 @@ The booking page is `booking.html`.
 
 The frontend lets visitors choose a consultation type, weekday, time slot, and submit their details. The Cloudflare Pages Function at `functions/api/book-consultation.js` is prepared to:
 
-1. authenticate with Google Calendar using a service account,
+1. authenticate with Google Calendar using OAuth from your real Google account,
 2. check if the selected slot is busy,
 3. create a 30-minute calendar event, and
 4. invite the visitor by email.
 
-If Google Calendar variables are not configured yet, the form falls back to sending the request by email.
+The service-account setup remains as a fallback, but OAuth is the recommended setup because it can send real guest invites.
 
 ### Required Cloudflare environment variables
 
 Set these in Cloudflare Pages, not in GitHub:
 
 ```text
-GOOGLE_CLIENT_EMAIL
-GOOGLE_PRIVATE_KEY
+GOOGLE_OAUTH_CLIENT_ID
+GOOGLE_OAUTH_CLIENT_SECRET
+GOOGLE_OAUTH_REFRESH_TOKEN
 GOOGLE_CALENDAR_ID
 BOOKING_TIMEZONE
+GOOGLE_CLIENT_EMAIL
+GOOGLE_PRIVATE_KEY
 ```
+
+OAuth variables are preferred. `GOOGLE_CLIENT_EMAIL` and `GOOGLE_PRIVATE_KEY` are only fallback variables.
 
 Use `Asia/Manila` for Philippine Standard Time.
 
