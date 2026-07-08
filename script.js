@@ -121,6 +121,10 @@ if (bookingForm) {
   const startField = document.querySelector("[data-booking-start-field]");
   const status = bookingForm.querySelector(".form-status");
   const submitButton = bookingForm.querySelector('button[type="submit"]');
+  const successStage = document.querySelector("[data-booking-success]");
+  const successTitle = document.querySelector("[data-booking-success-title]");
+  const successCopy = document.querySelector("[data-booking-success-copy]");
+  const bookAgainButton = document.querySelector("[data-book-again]");
   const defaultButtonText = submitButton?.innerHTML;
   const consultationMinutes = 30;
   const availabilityCache = new Map();
@@ -214,6 +218,37 @@ if (bookingForm) {
     if (availabilityStatus) {
       availabilityStatus.textContent = message;
     }
+  }
+
+  function showBookingForm() {
+    bookingForm.hidden = false;
+    bookingForm.classList.remove("is-confirmed");
+    successStage?.setAttribute("hidden", "");
+    successStage?.classList.remove("is-replaying");
+  }
+
+  function showBookingSuccess({ inviteSent = true } = {}) {
+    if (successTitle) {
+      successTitle.textContent = inviteSent ? "Calendar event booked." : "Booking request received.";
+    }
+
+    if (successCopy) {
+      successCopy.textContent = inviteSent
+        ? "Your calendar invite has been sent. We’ll see you on the call."
+        : "We received the request and will confirm the calendar invite shortly.";
+    }
+
+    if (status) {
+      status.className = "form-status";
+      status.textContent = "";
+    }
+
+    bookingForm.classList.add("is-confirmed");
+    bookingForm.hidden = true;
+    successStage?.removeAttribute("hidden");
+    successStage?.classList.remove("is-replaying");
+    void successStage?.offsetWidth;
+    successStage?.classList.add("is-replaying");
   }
 
   function renderSlots({ loading = false } = {}) {
@@ -389,13 +424,7 @@ if (bookingForm) {
         field.value = "";
       });
 
-      if (result.inviteSent === false) {
-        status.className = "form-status is-success";
-        status.textContent = "Booked. We received your request and will confirm the calendar invite shortly.";
-      } else {
-        status.className = "form-status is-success";
-        status.textContent = "Booked. A Google Calendar invite has been sent to your email.";
-      }
+      showBookingSuccess({ inviteSent: result.inviteSent !== false });
 
       availabilityCache.delete(getDayKey(selectedDay));
       selectedSlot = undefined;
@@ -416,4 +445,16 @@ if (bookingForm) {
 
   updateService("CRM automation");
   renderDays();
+
+  bookAgainButton?.addEventListener("click", () => {
+    showBookingForm();
+    selectedSlot = undefined;
+    updateSummary();
+    renderSlots();
+    if (status) {
+      status.className = "form-status";
+      status.textContent = "";
+    }
+    bookingForm.querySelector("input[name='Name']")?.focus();
+  });
 }

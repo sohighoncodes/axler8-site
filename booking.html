@@ -198,6 +198,23 @@
             <button class="primary-button booking-cta" type="submit">Confirm booking <span>→</span></button>
             <p class="form-status" role="status" aria-live="polite"></p>
           </form>
+
+          <div class="booking-success-stage" data-booking-success hidden>
+            <div class="success-orb" aria-hidden="true">
+              <span class="success-ring success-ring-one"></span>
+              <span class="success-ring success-ring-two"></span>
+              <span class="success-spark success-spark-one"></span>
+              <span class="success-spark success-spark-two"></span>
+              <span class="success-check">✓</span>
+            </div>
+            <p class="success-kicker">Booking confirmed</p>
+            <h3 data-booking-success-title>Calendar event booked.</h3>
+            <p data-booking-success-copy>Your invite has been sent. We’ll see you on the call.</p>
+            <button class="success-book-again" type="button" data-book-again>
+              Book another time
+              <span>↻</span>
+            </button>
+          </div>
         </aside>
       </section>
     </main>
