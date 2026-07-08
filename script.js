@@ -109,6 +109,7 @@ const bookingForm = document.querySelector("[data-booking-form]");
 if (bookingForm) {
   const dayContainer = document.querySelector("[data-booking-days]");
   const slotContainer = document.querySelector("[data-booking-slots]");
+  const availabilityStatus = document.querySelector("[data-availability-status]");
   const serviceCards = document.querySelectorAll(".booking-service");
   const serviceInputs = document.querySelectorAll('input[name="serviceChoice"]');
   const serviceSummary = document.querySelector("[data-booking-summary-service]");
@@ -121,16 +122,36 @@ if (bookingForm) {
   const status = bookingForm.querySelector(".form-status");
   const submitButton = bookingForm.querySelector('button[type="submit"]');
   const defaultButtonText = submitButton?.innerHTML;
-  const slotTimes = [
-    { label: "9:00 AM", hour: 9, minute: 0 },
-    { label: "10:30 AM", hour: 10, minute: 30 },
-    { label: "1:00 PM", hour: 13, minute: 0 },
-    { label: "3:30 PM", hour: 15, minute: 30 },
-  ];
+  const consultationMinutes = 30;
+  const availabilityCache = new Map();
   const dateFormatter = new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" });
   const longDateFormatter = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const timeFormatter = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+  const slotTimes = buildSlotTimes();
   let selectedDay;
   let selectedSlot;
+  let availabilityRequestId = 0;
+
+  function buildSlotTimes() {
+    const slots = [];
+    const sample = new Date();
+
+    for (let hour = 7; hour <= 23; hour += 1) {
+      const minutes = hour === 23 ? [0] : [0, 30];
+
+      minutes.forEach((minute) => {
+        sample.setHours(hour, minute, 0, 0);
+        slots.push({
+          id: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+          label: timeFormatter.format(sample),
+          hour,
+          minute,
+        });
+      });
+    }
+
+    return slots;
+  }
 
   function getUpcomingBusinessDays(count) {
     const days = [];
@@ -170,23 +191,125 @@ if (bookingForm) {
     }
   }
 
-  function renderSlots() {
+  function getDayKey(date) {
+    return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  }
+
+  function getSlotRange(day, slot) {
+    const start = new Date(day);
+    start.setHours(slot.hour, slot.minute, 0, 0);
+    const end = new Date(start.getTime() + consultationMinutes * 60 * 1000);
+    return { start, end };
+  }
+
+  function rangesOverlap(start, end, busyRanges) {
+    return busyRanges.some((range) => {
+      const busyStart = new Date(range.start);
+      const busyEnd = new Date(range.end);
+      return start < busyEnd && end > busyStart;
+    });
+  }
+
+  function setAvailabilityText(message) {
+    if (availabilityStatus) {
+      availabilityStatus.textContent = message;
+    }
+  }
+
+  function renderSlots({ loading = false } = {}) {
     if (!slotContainer || !selectedDay) return;
 
+    const dayKey = getDayKey(selectedDay);
+    const busyRanges = availabilityCache.get(dayKey) || [];
+
     slotContainer.innerHTML = "";
+    slotContainer.classList.toggle("is-loading", loading);
+
+    if (selectedSlot && !loading) {
+      const selectedRange = getSlotRange(selectedDay, selectedSlot);
+      const selectedIsBooked = rangesOverlap(selectedRange.start, selectedRange.end, busyRanges);
+      if (selectedIsBooked) {
+        selectedSlot = undefined;
+        updateSummary();
+      }
+    }
+
     slotTimes.forEach((slot) => {
+      const { start, end } = getSlotRange(selectedDay, slot);
+      const isBooked = !loading && rangesOverlap(start, end, busyRanges);
       const button = document.createElement("button");
       button.type = "button";
       button.className = "booking-slot";
-      button.textContent = slot.label;
+      button.disabled = loading || isBooked;
+      button.setAttribute("aria-pressed", selectedSlot?.id === slot.id ? "true" : "false");
+      button.classList.toggle("is-selected", selectedSlot?.id === slot.id && !isBooked);
+      button.classList.toggle("is-booked", isBooked);
+      button.innerHTML = `<span>${slot.label}</span><small>${loading ? "Checking..." : isBooked ? "Booked" : "Available"}</small>`;
       button.addEventListener("click", () => {
+        if (isBooked || loading) return;
         selectedSlot = slot;
-        slotContainer.querySelectorAll(".booking-slot").forEach((item) => item.classList.remove("is-selected"));
+        slotContainer.querySelectorAll(".booking-slot").forEach((item) => {
+          item.classList.remove("is-selected");
+          item.setAttribute("aria-pressed", "false");
+        });
         button.classList.add("is-selected");
+        button.setAttribute("aria-pressed", "true");
         updateSummary();
       });
       slotContainer.append(button);
     });
+  }
+
+  async function loadAvailabilityForDay(date) {
+    const dayKey = getDayKey(date);
+    const requestId = (availabilityRequestId += 1);
+
+    if (availabilityCache.has(dayKey)) {
+      renderSlots();
+      setAvailabilityText("Times are shown in your timezone. Booked times are automatically blocked.");
+      return;
+    }
+
+    if (window.location.protocol === "file:") {
+      availabilityCache.set(dayKey, []);
+      renderSlots();
+      setAvailabilityText("Live availability appears on the published site. Booked times are blocked there.");
+      return;
+    }
+
+    const rangeStart = new Date(date);
+    rangeStart.setHours(7, 0, 0, 0);
+    const rangeEnd = new Date(date);
+    rangeEnd.setHours(23, 30, 0, 0);
+
+    renderSlots({ loading: true });
+    setAvailabilityText("Checking the latest available times...");
+
+    try {
+      const response = await fetch(
+        `/api/booking-availability?start=${encodeURIComponent(rangeStart.toISOString())}&end=${encodeURIComponent(rangeEnd.toISOString())}`,
+        { headers: { Accept: "application/json" } },
+      );
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.message || "Availability could not be loaded.");
+      }
+
+      availabilityCache.set(dayKey, Array.isArray(result.busy) ? result.busy : []);
+
+      if (requestId === availabilityRequestId) {
+        renderSlots();
+        setAvailabilityText("Times are shown in your timezone. Booked times are automatically blocked.");
+      }
+    } catch (_) {
+      availabilityCache.set(dayKey, []);
+
+      if (requestId === availabilityRequestId) {
+        renderSlots();
+        setAvailabilityText("Live availability could not load. We’ll verify your selected time before confirming.");
+      }
+    }
   }
 
   function renderDays() {
@@ -197,14 +320,14 @@ if (bookingForm) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "booking-day";
-      button.innerHTML = `<b>${date.getDate()}</b><span><strong>${dateFormatter.format(date)}</strong><span>${index === 0 ? "Soonest available" : "Open consultation day"}</span></span>`;
+      button.innerHTML = `<b>${date.getDate()}</b><span><strong>${dateFormatter.format(date)}</strong><span>${index === 0 ? "Next opening" : "Open slots"}</span></span>`;
       button.addEventListener("click", () => {
         selectedDay = date;
         selectedSlot = undefined;
         dayContainer.querySelectorAll(".booking-day").forEach((item) => item.classList.remove("is-selected"));
         button.classList.add("is-selected");
-        renderSlots();
         updateSummary();
+        loadAvailabilityForDay(date);
       });
       dayContainer.append(button);
 
@@ -252,6 +375,8 @@ if (bookingForm) {
       if (response.status === 409) {
         status.className = "form-status is-error";
         status.textContent = result.message || "That slot is no longer available. Please choose another time.";
+        availabilityCache.delete(getDayKey(selectedDay));
+        await loadAvailabilityForDay(selectedDay);
         return;
       }
 
@@ -271,6 +396,11 @@ if (bookingForm) {
         status.className = "form-status is-success";
         status.textContent = "Booked. A Google Calendar invite has been sent to your email.";
       }
+
+      availabilityCache.delete(getDayKey(selectedDay));
+      selectedSlot = undefined;
+      updateSummary();
+      await loadAvailabilityForDay(selectedDay);
     } catch (error) {
       status.className = "form-status is-error";
       if (error.message === "local-file-preview") {
