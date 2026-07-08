@@ -244,7 +244,6 @@ if (bookingForm) {
     }
 
     bookingForm.classList.add("is-confirmed");
-    bookingForm.hidden = true;
     successStage?.removeAttribute("hidden");
     successStage?.classList.remove("is-replaying");
     void successStage?.offsetWidth;
